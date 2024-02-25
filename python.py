@@ -1,6 +1,9 @@
 # Expense-Tracker
 from typing import Any
 from datetime import datetime
+import pandas as pd
+import time
+import random
 class App: 
     def __init__(self)->None:
         self.currentBalance:int = 0
@@ -15,7 +18,10 @@ class App:
         else:    
             self.currentBalance += transaction
             self.expense = abs(self.expense + transaction)
-        newHistory:dict[str,Any] = {"id":str(len(self.history)+1), "amount":transaction,"description":description}    
+        timestamp = int(time.time() * 1000)  # Current timestamp in milliseconds
+        random_num = random.randint(0, 1000)  # Random number between 0 and 1000
+        unique_id = f"{timestamp}-{random_num}"    
+        newHistory:dict[str,Any] = {"id":str(unique_id), "amount":transaction,"description":description,"Created-On":datetime.now().strftime("%y/%m/%d %I:%M:%S %p"),"Last-Updated":"Not Updated" }   
         self.history.append(newHistory)    
     def deleteTransaction(self, id:str):
         for transaction in self.history:
@@ -32,8 +38,9 @@ class App:
                 return
         print("Transaction not found.")
     def viewTransaction(self)->None:
+        history_df:pd.DataFrame = pd.DataFrame(self.history)
         if self.history:
-            print(self.history)    
+            print(history_df)    
         else:
             print("No transactions found.") 
             
@@ -41,10 +48,10 @@ class App:
     def updateTransaction(self, id: str, newAmount: int, newDescription: str) -> None:
      for transaction in self.history:
         if transaction["id"] == id:
-            oldAmount = transaction["amount"]
+            oldAmount:int = transaction["amount"]
             transaction["amount"] = newAmount
             transaction["description"] = newDescription
-
+            transaction["Last-Updated"] = datetime.now().strftime("%y/%m/%d %I:%M:%S %p")
             # Update currentBalance, expense, and income
             self.currentBalance += newAmount - oldAmount
             if oldAmount >= 0:
